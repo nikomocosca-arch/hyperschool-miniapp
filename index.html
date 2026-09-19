@@ -742,6 +742,13 @@
     <a href="https://t.me/WonderSchool_bot" class="btn btn-primary" style="width:100%; justify-content:center;">Открыть HyperSchool</a>
   </div>
 
+  <!-- FIRST-RUN CONFIRM: виден только при первом запуске из бота (?first=1) -->
+  <div id="firstRunConfirm" class="footer-cta" style="display:none; margin-top:14px;">
+    <h3>Обязательно к ознакомлению</h3>
+    <p>Ты пролистал(а), как работает бот, лимиты и подписка? Нажми кнопку ниже — и мы продолжим в чате.</p>
+    <button id="ackBtn" type="button" class="btn btn-primary" disabled style="width:100%; justify-content:center; opacity:.5;">Пролистай страницу до конца…</button>
+  </div>
+
   <div class="fine-print">HyperSchool · от родителя школьника для родителей и школьников</div>
   <div style="text-align:center; margin-top:10px; font-size:10px; letter-spacing:.04em; color: rgba(110,106,144,.45);">inspired by 2V Forge</div>
 
@@ -761,6 +768,42 @@
         });
       }
     }catch(err){ /* работает и как обычная веб-страница вне Telegram */ }
+
+    // Первый запуск: бот открывает страницу как ...?first=1 из кнопки клавиатуры.
+    // Кнопка подтверждения активируется после 8 секунд И когда пользователь дошёл
+    // до конца страницы; sendData отправляет боту "info_read" и закрывает Mini App.
+    (function(){
+      var tg = window.Telegram && window.Telegram.WebApp;
+      var box = document.getElementById('firstRunConfirm');
+      var ackBtn = document.getElementById('ackBtn');
+      var isFirst = /[?&]first=1(&|$)/.test(location.search);
+      if(!(tg && tg.initData && isFirst && box && ackBtn)) return;
+
+      box.style.display = 'block';
+      var footer = document.querySelector('.footer-cta');
+      if(footer && footer !== box) footer.style.display = 'none';
+      document.querySelectorAll('details').forEach(function(d){ d.open = true; });
+
+      var timerDone = false, reachedEnd = false;
+      function update(){
+        if(timerDone && reachedEnd){
+          ackBtn.disabled = false;
+          ackBtn.style.opacity = '1';
+          ackBtn.textContent = '✅ Ознакомился, продолжить';
+        }
+      }
+      setTimeout(function(){ timerDone = true; update(); }, 8000);
+      if('IntersectionObserver' in window){
+        new IntersectionObserver(function(entries){
+          entries.forEach(function(e){ if(e.isIntersecting){ reachedEnd = true; update(); } });
+        }, {threshold: 0.6}).observe(box);
+      } else { reachedEnd = true; }
+
+      ackBtn.addEventListener('click', function(){
+        if(ackBtn.disabled) return;
+        tg.sendData('info_read');
+      });
+    })();
 
     var parentsBtn = document.getElementById('parentsBtn');
     var parentsSection = document.getElementById('parents');
