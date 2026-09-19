@@ -745,9 +745,8 @@
   <!-- FIRST-RUN CONFIRM: виден только при первом запуске из бота (?first=1) -->
   <div id="firstRunConfirm" class="footer-cta" style="display:none; margin-top:14px;">
     <h3>Обязательно к ознакомлению</h3>
-    <p>Ты пролистал(а), как работает бот, лимиты и подписка? Нажми кнопку ниже — и мы продолжим в чате.</p>
-    <button id="ackBtn" type="button" class="btn btn-primary" disabled style="width:100%; justify-content:center; opacity:.5;">Пролистай страницу до конца…</button>
-  </div>
+    <p>Информация выше обязательна к прочтению: как работает бот, какие есть лимиты и что даёт подписка. Когда прочитаешь, нажми кнопку — и мы продолжим в чате.</p>
+    <button id="ackBtn" type="button" class="btn btn-primary" disabled style="width:100%; justify-content:center; opacity:.5;">Пролистай страницу до конца…</button>  </div>
 
   <div class="fine-print">HyperSchool · от родителя школьника для родителей и школьников</div>
   <div style="text-align:center; margin-top:10px; font-size:10px; letter-spacing:.04em; color: rgba(110,106,144,.45);">inspired by 2V Forge</div>
@@ -780,9 +779,15 @@
       // initData у Mini App из кнопки клавиатуры ПУСТОЙ (так задумано Telegram), поэтому
       // "мы в Telegram" определяем по platform ('unknown' - обычный браузер).
       var inTelegram = !!(tg && tg.platform && tg.platform !== 'unknown');
-      if(!(inTelegram && isFirst && box && ackBtn)) return;
+      if(!(isFirst && box && ackBtn)) return;
 
       box.style.display = 'block';
+      var dbg = document.getElementById('dbgLine');
+      if(dbg) dbg.textContent = 'v3 · platform=' + (tg && tg.platform) + ' · sendData=' + !!(tg && tg.sendData);
+      if(!inTelegram){
+        ackBtn.textContent = 'Открой эту страницу кнопкой из бота в Telegram';
+        return;
+      }
       var footer = document.querySelector('.footer-cta');
       if(footer && footer !== box) footer.style.display = 'none';
       document.querySelectorAll('details').forEach(function(d){ d.open = true; });
