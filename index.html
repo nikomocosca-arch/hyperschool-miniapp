@@ -777,7 +777,10 @@
       var box = document.getElementById('firstRunConfirm');
       var ackBtn = document.getElementById('ackBtn');
       var isFirst = /[?&]first=1(&|$)/.test(location.search);
-      if(!(tg && tg.initData && isFirst && box && ackBtn)) return;
+      // initData у Mini App из кнопки клавиатуры ПУСТОЙ (так задумано Telegram), поэтому
+      // "мы в Telegram" определяем по platform ('unknown' - обычный браузер).
+      var inTelegram = !!(tg && tg.platform && tg.platform !== 'unknown');
+      if(!(inTelegram && isFirst && box && ackBtn)) return;
 
       box.style.display = 'block';
       var footer = document.querySelector('.footer-cta');
